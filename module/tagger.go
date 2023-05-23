@@ -5,6 +5,7 @@ import (
 	"go/parser"
 	"go/printer"
 	"go/token"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -47,6 +48,7 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 	}
 
 	module := m.Parameters().Str("module")
+	outdir := m.Parameters().Str("outdir")
 
 	extractor := newTagExtractor(m, m.Context, autoTags)
 
@@ -57,14 +59,12 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 
 		gfname := m.Context.OutputPath(f).SetExt(".go").String()
 
-		outdir := m.Parameters().Str("outdir")
 		filename := gfname
 		if outdir != "" {
 			filename = filepath.Join(outdir, gfname)
 		}
 
 		if module != "" {
-
 			filename = strings.ReplaceAll(filename, string(filepath.Separator), "/")
 			trim := module + "/"
 			if !strings.HasPrefix(filename, trim) {
@@ -83,7 +83,7 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 		var buf strings.Builder
 		m.CheckErr(printer.Fprint(&buf, fs, fn))
 
-		m.OverwriteGeneratorFile(filename, buf.String())
+		m.OverwriteCustomFile(filename, buf.String(), os.ModePerm)
 	}
 
 	return m.Artifacts()
