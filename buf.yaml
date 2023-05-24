@@ -1,5 +1,5 @@
 version: v1
-name: buf.build/khoitx-ugaming/protoc-gen-gotag
+name: buf.build/srikrsna/protoc-gen-gotag
 deps:
   -  buf.build/googleapis/googleapis
 
