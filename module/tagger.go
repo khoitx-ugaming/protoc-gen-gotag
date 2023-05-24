@@ -49,6 +49,7 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 
 	module := m.Parameters().Str("module")
 	outdir := m.Parameters().Str("outdir")
+	outAbsDir := m.Parameters().Str("outabsdir")
 
 	extractor := newTagExtractor(m, m.Context, autoTags)
 
@@ -60,7 +61,9 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 		gfname := m.Context.OutputPath(f).SetExt(".go").String()
 
 		filename := gfname
-		if outdir != "" {
+		if len(outAbsDir) > 0 {
+			filename = filepath.Join(outAbsDir, gfname)
+		} else if outdir != "" {
 			filename = filepath.Join(outdir, gfname)
 		}
 
@@ -83,7 +86,11 @@ func (m mod) Execute(targets map[string]pgs.File, packages map[string]pgs.Packag
 		var buf strings.Builder
 		m.CheckErr(printer.Fprint(&buf, fs, fn))
 
-		m.OverwriteCustomFile(filename, buf.String(), os.ModePerm)
+		if len(outAbsDir) > 0 {
+			m.OverwriteCustomFile(filename, buf.String(), os.ModePerm)
+		} else {
+			m.OverwriteGeneratorFile(filename, buf.String())
+		}
 	}
 
 	return m.Artifacts()
